@@ -30,16 +30,17 @@ public class MainBot2013 extends SimpleRobot {
    //Joystick
     Joystick leftDriveStick = new Joystick(1);
     Joystick rightDriveStick = new Joystick(2);
-    Joystick actionStick = new Joystick(3);
+    Joystick actionJoy = new Joystick(3);
     
-    JoystickButton a1 = new JoystickButton(actionStick,1);
-    JoystickButton a2 = new JoystickButton(actionStick,2);
-    JoystickButton a3 = new JoystickButton(actionStick,3);
+    JoystickButton a1 = new JoystickButton(actionJoy,1);
+    JoystickButton a2 = new JoystickButton(actionJoy,2);
+    JoystickButton a3 = new JoystickButton(actionJoy,3);
     
     //PWM
     
     RobotDrive drive = new RobotDrive(1,2,3,4); 
-    Jaguar shooter = new Jaguar(5); //Shooter
+    Jaguar shooter = new Jaguar(5);                                             //Shooter
+    Jaguar shooter2 = new Jaguar(6);                                            //Shooter2
     
     Victor vic1 = new Victor(6);
     Victor vic2 = new Victor(7);
@@ -49,6 +50,9 @@ public class MainBot2013 extends SimpleRobot {
     DigitalInput lim2 = new DigitalInput(2);
     DigitalInput lim3 = new DigitalInput(3);
     DigitalInput lim4 = new DigitalInput(4);
+    DigitalInput lim5 = new DigitalInput(5);
+    DigitalInput lim6 = new DigitalInput(6);
+    
     
     Solenoid sol1 = new Solenoid(5);
     Solenoid sol2 = new Solenoid(6);
