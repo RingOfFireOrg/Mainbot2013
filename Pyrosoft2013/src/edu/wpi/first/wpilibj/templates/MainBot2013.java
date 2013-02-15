@@ -18,13 +18,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the SimpleRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
- */
+
+
 public class MainBot2013 extends SimpleRobot {
     
    //Joystick
@@ -38,7 +33,7 @@ public class MainBot2013 extends SimpleRobot {
     
     //PWM
     
-    RobotDrive drive = new RobotDrive(1,2,3,4); 
+    RobotDrive drive = new RobotDrive(1,2,3,4);                                 //The drive train with PWM Jags on 1,2,3 and 4 
     Jaguar shooter = new Jaguar(5);                                             //Shooter
     Jaguar shooter2 = new Jaguar(6);                                            //Shooter2
     
@@ -78,9 +73,6 @@ public class MainBot2013 extends SimpleRobot {
         }
     }
     
-    /**
-     * This function is called once each time the robot enters test mode.
-     */
     public void test() {
     
     }
