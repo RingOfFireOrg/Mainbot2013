@@ -6,74 +6,215 @@
 /*----------------------------------------------------------------------------*/
 
 package edu.wpi.first.wpilibj.templates;
-
-
+    
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.SimpleRobot;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-
+/**
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as described in the SimpleRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the manifest file in the resource
+ * directory.
+ */
 
 public class MainBot2013 extends SimpleRobot {
-    
-   //Joystick
-    Joystick leftDriveStick = new Joystick(1);
-    Joystick rightDriveStick = new Joystick(2);
-    Joystick actionJoy = new Joystick(3);
-    
-    JoystickButton a1 = new JoystickButton(actionJoy,1);
-    JoystickButton a2 = new JoystickButton(actionJoy,2);
-    JoystickButton a3 = new JoystickButton(actionJoy,3);
-    
-    //PWM
-    
-    RobotDrive drive = new RobotDrive(1,2,3,4);                                 //The drive train with PWM Jags on 1,2,3 and 4 
-    Jaguar shooter = new Jaguar(5);                                             //Shooter
-    Jaguar shooter2 = new Jaguar(6);                                            //Shooter2
-    
-    Victor vic1 = new Victor(6);
-    Victor vic2 = new Victor(7);
-    
-    //Digital IO
-    DigitalInput lim1 = new DigitalInput(1);
-    DigitalInput lim2 = new DigitalInput(2);
-    DigitalInput lim3 = new DigitalInput(3);
-    DigitalInput lim4 = new DigitalInput(4);
-    DigitalInput lim5 = new DigitalInput(5);
-    DigitalInput lim6 = new DigitalInput(6);
-    
-    
-    Solenoid sol1 = new Solenoid(5);
-    Solenoid sol2 = new Solenoid(6);
-            
-            
     /**
      * This function is called once each time the robot enters autonomous mode.
      */
+    
+    //Relays
+    Relay banana2 = new Relay(6);
+    
+    //Digital inputs
+    DigitalInput firingmech = new DigitalInput(1);
+    DigitalInput tilttop = new DigitalInput(2);
+    DigitalInput tiltbot = new DigitalInput(3);
+    DigitalInput Rotleft = new DigitalInput(4);
+    DigitalInput Rotright = new DigitalInput(5);
+    
+    //Motor Control
+    Jaguar leftdrive1 = new Jaguar(1);
+    Jaguar leftdrive2 = new Jaguar(2);
+    Jaguar rightdrive1 = new Jaguar(3);
+    Jaguar rightdrive2 = new Jaguar(4);
+    Victor tilter = new Victor(5);
+    Victor rotator = new Victor(6);
+    Servo leftgearbox = new Servo(7);
+    Servo rightgearbox = new Servo(8);
+    Victor shooter = new Victor(9);
+    
+    //Digitaledness
+    Joystick leftStick = new Joystick(1);
+    Joystick rightStick = new Joystick(2);
+    Joystick actionJoy = new Joystick(3);
+    JoystickButton trigger = new JoystickButton(actionJoy, 1);
+    JoystickButton lefttrig = new JoystickButton(leftStick,1);
+    JoystickButton righttrig = new JoystickButton(rightStick,1);
+    
     public void autonomous() {
-        while (isAutonomous() && isEnabled()){
-            
+        while (isAutonomous () && isEnabled()) {
+                Timer.delay(5);
+                rightgearbox.set(1.0);
+           
+                Timer.delay(5);
+                rightgearbox.set(0.1);
+
         }
-        
     }
 
     /**
      * This function is called once each time the robot enters operator control.
      */
-    public void operatorControl() {
-        while (isOperatorControl() && isEnabled()){
-            Timer.delay(0.005);
-            drive.tankDrive(leftDriveStick.getY(), rightDriveStick.getY());
+    
+    public double rampmotor(double req, double cur){
+        double error = (req - cur);
+        double output = 0;
+        
+        if(error >= 0.1){
+            output = ((0.1)*(req-cur)+ cur);
+            
         }
+        else{
+            output = req;
+        }
+        return output;
     }
     
-    public void test() {
     
+    public void operatorControl() {
+        boolean fire = false, gearboxstate = false, b, prevalue = false;        
+        double Tiltvalue = 0.0;                                                 //sets value to give garunteed start position
+//        SmartDashboard.putString("Teleop Enabled", "you can make things move now");
+        while (isOperatorControl() && isEnabled())                              //Runs while enagled 
+        {
+            Timer.delay(0.1);
+            
+            leftdrive1.set(leftStick.getY());
+            leftdrive2.set(leftStick.getY());
+            rightdrive1.set(rightStick.getY());
+            rightdrive2.set(rightStick.getY());                                  
+            
+            //Gearbox
+            /*
+            if (lefttrig.get() && righttrig.get()){
+                b = true;                                                       // b if both buttons pressed
+            } else {
+                b = false;
+            }
+            if ((prevalue || b) && !(prevalue && b)){
+                gearboxstate=!gearboxstate;
+            }
+            if (gearboxstate){
+                leftgearbox.set(0.23);
+                rightgearbox.set(0.23);
+            } else {
+                leftgearbox.set(0.76);
+                rightgearbox.set(0.76);
+            }
+            if (b){
+                prevalue = true;
+            } else {
+                prevalue = false;
+            }
+            */
+            //Shooter
+            shooter.set(actionJoy.getThrottle());
+            
+            
+            
+            //Banana 2.0
+            if(firingmech.get()){                                               //limitswitch is pressed
+                if(trigger.get()){                                              //the firing button is pressed
+                    fire = true;                                                //motor should be turned on
+                }else{                                                          
+                    fire = false;                                               //motor should be turned off
+                }                                                               
+            }else{                                                              //limitswitch is not pressed
+                fire = true;                                                    //motor should be turned on
+            }
+            if(fire){                                                           //if motor should be on
+                banana2.set(Relay.Value.kForward);                              //set it to on
+            }else{                                                              //if motor should be off
+                banana2.set(Relay.Value.kOff);                                  //set it to off
+            }
+            
+            //Tilt Aimer
+            Tiltvalue = actionJoy.getY()*(-1);
+            
+            if (tilttop.get() && tiltbot.get()){                                //if both are pressed, this shouldnt happen
+                //SmartDashboard.putString("Both limits pressed", "this instance should never be reached expect physical problem");
+                tilter.set(0.0);
+            } else if (tilttop.get()){                                          //is top limit switch pressed
+                //SmartDashboard.putString("Limitswitch Error", "you have reached the upper limit");
+                if (Tiltvalue < 0.0){                                           //if the suggested value is down
+                    tilter.set(Tiltvalue);                                      //allow set of motor
+                } else {                                                        //if the suggested value is up
+                    tilter.set(0);                                              //do not set motor
+                }
+            } else if (tiltbot.get()){                                   //is bottom limit switch pressed
+                //SmartDashboard.putString("Limitswitch Error", "you have reached the bottom limit");
+                if (Tiltvalue > 0.0){                                           //if the suggested value is up
+                    tilter.set(Tiltvalue);                                      //allow set of motor
+                } else {                                                        //if the suggested value is down
+                    tilter.set(0);                                              //do not set motor
+                }
+            } else {                                                            //
+                tilter.set(Tiltvalue);                                          //
+            }
+            
+            //Rotator Aimer
+            /*
+            Tiltvalue = actionJoy.getY()*(-1);
+            
+            if (Rotleft.get() && Rotleft.get()){                                //if both are pressed, this shouldnt happen
+                //SmartDashboard.putString("Both limits pressed", "this instance should never be reached expect physical problem");
+                rotator.set(0.0);
+            } else if (Rotright.get()){                                          //is top limit switch pressed
+                //SmartDashboard.putString("Limitswitch Error", "you have reached the upper limit");
+                if (Tiltvalue < 0.0){                                           //if the suggested value is down
+                    rotator.set(Tiltvalue);                                      //allow set of motor
+                } else {                                                        //if the suggested value is up
+                    rotator.set(0);                                              //do not set motor
+                }
+            } else if (Rotleft.get()){                                   //is bottom limit switch pressed
+                //SmartDashboard.putString("Limitswitch Error", "you have reached the bottom limit");
+                if (Tiltvalue > 0.0){                                           //if the suggested value is up
+                    rotator.set(Tiltvalue);                                      //allow set of motor
+                } else {                                                        //if the suggested value is down
+                    rotator.set(0);                                              //do not set motor
+                }
+            } else {                                                            //
+                rotator.set(Tiltvalue);                                          //
+            }
+            */
+            //rob's version of tilt aimer program
+            /*
+            int position = 0;
+            if (limitSwitchtop.get()){ 
+                position = 1;
+            }
+            if (limitSwitchbot.get()) {
+                position = -1;
+            }
+            
+            if (position == 1 && Tiltvalue > 0) {
+                Tiltvalue = 0;
+            }
+            if (position == -1 && Tiltvalue < 0) {
+                Tiltvalue = 0;
+            }
+            tilter.set(Tiltvalue);
+            */
+            
+        }
     }
 }
