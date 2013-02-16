@@ -46,11 +46,12 @@ public class MainBot2013 extends SimpleRobot {
     Jaguar leftdrive2 = new Jaguar(2);
     Jaguar rightdrive1 = new Jaguar(3);
     Jaguar rightdrive2 = new Jaguar(4);
-    Victor tilter = new Victor(5);
+    Jaguar shooter = new Jaguar(5);
+    Victor tilter = new Victor(7);
     Victor rotator = new Victor(6);
-    Servo leftgearbox = new Servo(7);
-    Servo rightgearbox = new Servo(8);
-    Victor shooter = new Victor(9);
+    Servo leftgearbox = new Servo(10);
+    Servo rightgearbox = new Servo(9);
+   
     
     //Digitaledness
     Joystick leftStick = new Joystick(1);
@@ -93,30 +94,35 @@ public class MainBot2013 extends SimpleRobot {
     public void operatorControl() {
         boolean fire = false, gearboxstate = false, b, prevalue = false;        
         double Tiltvalue = 0.0;                                                 //sets value to give garunteed start position
-//        SmartDashboard.putString("Teleop Enabled", "you can make things move now");
+        double shooterspeed=0;
+        SmartDashboard.putString("Teleop:", " Enabled");
         while (isOperatorControl() && isEnabled())                              //Runs while enagled 
         {
             Timer.delay(0.1);
             
-            leftdrive1.set(leftStick.getY());
-            leftdrive2.set(leftStick.getY());
-            rightdrive1.set(rightStick.getY());
-            rightdrive2.set(rightStick.getY());                                  
-            
+            leftdrive1.set((leftStick.getY()*.75));
+            leftdrive2.set((leftStick.getY()*.75));
+            rightdrive1.set((rightStick.getY()*.75)*(-1));
+            rightdrive2.set((rightStick.getY()*.75)*(-1));                                  
+          
+
+                
             //Gearbox
-            /*
+            
             if (lefttrig.get() && righttrig.get()){
                 b = true;                                                       // b if both buttons pressed
             } else {
                 b = false;
             }
-            if ((prevalue || b) && !(prevalue && b)){
+            if (!prevalue && b){
                 gearboxstate=!gearboxstate;
             }
             if (gearboxstate){
+                SmartDashboard.putString("Gear:", " HIGH");
                 leftgearbox.set(0.23);
                 rightgearbox.set(0.23);
             } else {
+                SmartDashboard.putString("Gear:", " LOW");
                 leftgearbox.set(0.76);
                 rightgearbox.set(0.76);
             }
@@ -125,10 +131,10 @@ public class MainBot2013 extends SimpleRobot {
             } else {
                 prevalue = false;
             }
-            */
-            //Shooter
-            shooter.set(actionJoy.getThrottle());
             
+            //Shooter
+            shooterspeed=rampmotor((actionJoy.getThrottle()+1)/2,shooterspeed);
+            shooter.set(shooterspeed);
             
             
             //Banana 2.0
@@ -216,5 +222,8 @@ public class MainBot2013 extends SimpleRobot {
             */
             
         }
+    }
+    public void disabled(){
+        SmartDashboard.putString("Teleop:", " Disabled");
     }
 }
