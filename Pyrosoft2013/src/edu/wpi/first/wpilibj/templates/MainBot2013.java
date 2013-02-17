@@ -60,6 +60,8 @@ public class MainBot2013 extends SimpleRobot {
     JoystickButton trigger = new JoystickButton(actionJoy, 1);
     JoystickButton lefttrig = new JoystickButton(leftStick,1);
     JoystickButton righttrig = new JoystickButton(rightStick,1);
+    JoystickButton tiltAllow = new JoystickButton(actionJoy,3);
+    JoystickButton rotAllow = new JoystickButton(actionJoy,4);
     
     public void autonomous() {
         while (isAutonomous () && isEnabled()) {
@@ -77,7 +79,7 @@ public class MainBot2013 extends SimpleRobot {
      */
     
     public double rampmotor(double req, double cur){
-        double error = (req - cur);
+        double error = Math.abs(req - cur);
         double output = 0;
         
         if(error >= 0.1){
@@ -133,8 +135,9 @@ public class MainBot2013 extends SimpleRobot {
             }
             
             //Shooter
-            shooterspeed=rampmotor((actionJoy.getThrottle()+1)/2,shooterspeed);
+            shooterspeed=rampmotor((((actionJoy.getThrottle()-1)/-2)*(-1)),shooterspeed);
             shooter.set(shooterspeed);
+            SmartDashboard.putNumber("Shooter Speed: ", shooterspeed * (-100)); //happy kyle? indeed
             
             
             //Banana 2.0
@@ -154,54 +157,59 @@ public class MainBot2013 extends SimpleRobot {
             }
             
             //Tilt Aimer
-            Tiltvalue = actionJoy.getY()*(-1);
+            Tiltvalue = actionJoy.getY(); //(-1);
             
-            if (tilttop.get() && tiltbot.get()){                                //if both are pressed, this shouldnt happen
-                //SmartDashboard.putString("Both limits pressed", "this instance should never be reached expect physical problem");
-                tilter.set(0.0);
-            } else if (tilttop.get()){                                          //is top limit switch pressed
-                //SmartDashboard.putString("Limitswitch Error", "you have reached the upper limit");
-                if (Tiltvalue < 0.0){                                           //if the suggested value is down
-                    tilter.set(Tiltvalue);                                      //allow set of motor
-                } else {                                                        //if the suggested value is up
-                    tilter.set(0);                                              //do not set motor
+            if (tiltAllow.get()){ 
+                if (tilttop.get() && tiltbot.get()){                                //if both are pressed, this shouldnt happen
+                    SmartDashboard.putString("Limitswitch:", "both limits pressed");
+                    tilter.set(0.0);
+                } else if (tilttop.get()){                                          //is top limit switch pressed
+                    SmartDashboard.putString("Limitswitch:", " you have reached the upper limit");
+                    if (Tiltvalue < 0.0){                                           //if the suggested value is down
+                        tilter.set(Tiltvalue);                                      //allow set of motor
+                    } else {                                                        //if the suggested value is up
+                        tilter.set(0);                                              //do not set motor
+                    }
+                } else if (tiltbot.get()){                                   //is bottom limit switch pressed
+                    SmartDashboard.putString("Limitswitch:", " you have reached the bottom limit");
+                    if (Tiltvalue > 0.0){                                           //if the suggested value is up
+                        tilter.set(Tiltvalue);                                      //allow set of motor
+                    } else {                                                        //if the suggested value is down
+                        tilter.set(0);                                              //do not set motor
+                    }
+                } else {
+                    SmartDashboard.putString("Limitswitch:","neither switch is pressed");
+                    tilter.set(Tiltvalue);                                          //
                 }
-            } else if (tiltbot.get()){                                   //is bottom limit switch pressed
-                //SmartDashboard.putString("Limitswitch Error", "you have reached the bottom limit");
-                if (Tiltvalue > 0.0){                                           //if the suggested value is up
-                    tilter.set(Tiltvalue);                                      //allow set of motor
-                } else {                                                        //if the suggested value is down
-                    tilter.set(0);                                              //do not set motor
-                }
-            } else {                                                            //
-                tilter.set(Tiltvalue);                                          //
             }
             
             //Rotator Aimer
-            /*
+            
             Tiltvalue = actionJoy.getY()*(-1);
             
-            if (Rotleft.get() && Rotleft.get()){                                //if both are pressed, this shouldnt happen
-                //SmartDashboard.putString("Both limits pressed", "this instance should never be reached expect physical problem");
-                rotator.set(0.0);
-            } else if (Rotright.get()){                                          //is top limit switch pressed
-                //SmartDashboard.putString("Limitswitch Error", "you have reached the upper limit");
-                if (Tiltvalue < 0.0){                                           //if the suggested value is down
-                    rotator.set(Tiltvalue);                                      //allow set of motor
-                } else {                                                        //if the suggested value is up
-                    rotator.set(0);                                              //do not set motor
+            if (rotAllow.get()){
+                if (Rotleft.get() && Rotleft.get()){                            //if both are pressed, this shouldnt happen
+                    //SmartDashboard.putString("Both limits pressed", "this instance should never be reached expect physical problem");
+                    rotator.set(0.0);
+                } else if (Rotright.get()){                                     //is top limit switch pressed
+                    //SmartDashboard.putString("Limitswitch Error", "you have reached the upper limit");
+                    if (Tiltvalue < 0.0){                                       //if the suggested value is down
+                        rotator.set(Tiltvalue);                                 //allow set of motor
+                    } else {                                                    //if the suggested value is up
+                        rotator.set(0);                                         //do not set motor
+                    }
+                } else if (Rotleft.get()){                                      //is bottom limit switch pressed
+                    //SmartDashboard.putString("Limitswitch Error", "you have reached the bottom limit");
+                    if (Tiltvalue > 0.0){                                       //if the suggested value is up
+                        rotator.set(Tiltvalue);                                 //allow set of motor
+                    } else {                                                    //if the suggested value is down
+                        rotator.set(0);                                         //do not set motor
+                    }
+                } else {                                                        //
+                    rotator.set(Tiltvalue);                                     //
                 }
-            } else if (Rotleft.get()){                                   //is bottom limit switch pressed
-                //SmartDashboard.putString("Limitswitch Error", "you have reached the bottom limit");
-                if (Tiltvalue > 0.0){                                           //if the suggested value is up
-                    rotator.set(Tiltvalue);                                      //allow set of motor
-                } else {                                                        //if the suggested value is down
-                    rotator.set(0);                                              //do not set motor
-                }
-            } else {                                                            //
-                rotator.set(Tiltvalue);                                          //
             }
-            */
+            
             //rob's version of tilt aimer program
             /*
             int position = 0;
