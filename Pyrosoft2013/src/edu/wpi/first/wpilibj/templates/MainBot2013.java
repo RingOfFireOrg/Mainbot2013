@@ -50,7 +50,7 @@ public class MainBot2013 extends SimpleRobot {
     Jaguar rightdrive2 = new Jaguar(4);
     Jaguar shooter = new Jaguar(5);
     Victor tilter = new Victor(7);
-    Victor rotator = new Victor(6);
+    Victor rotator = new Victor(8);
     Servo leftgearbox = new Servo(10);
     Servo rightgearbox = new Servo(9);
    
@@ -189,14 +189,20 @@ public class MainBot2013 extends SimpleRobot {
                         tilter.set(0);                                          //do not set motor
                     }
                 } else {
-                    SmartDashboard.putString("Limitswitch:","neither switch is pressed");
-                    tilter.set(Tiltvalue);                                      //
-                } 
+                    SmartDashboard.putString("Tilt limit:"," neither switch is pressed");
+                    tilter.set(Tiltvalue); 
+                    //
+                }
             }
+            else{
+                tilter.set(0);
+            }
+            
+            
             
             //Rotator Aimer
             
-            Rotationvalue = actionJoy.getY()*(-1);
+            Rotationvalue = actionJoy.getX()*(-1);
             
             if (rotAllow.get()){
                 if (Rotleft.get() && Rotleft.get()){                            //if both are pressed, this shouldnt happen
@@ -205,14 +211,14 @@ public class MainBot2013 extends SimpleRobot {
                 } else if (Rotright.get()){                                     //is top limit switch pressed
                     SmartDashboard.putString("Turn Limit", "you have reached the right limit");
                     if (Rotationvalue < 0.0){                                       //if the suggested value is down
-                        rotator.set(Tiltvalue);                                 //allow set of motor
+                        rotator.set(Rotationvalue);                                 //allow set of motor
                     } else {                                                    //if the suggested value is up
                         rotator.set(0);                                         //do not set motor
                     }
                 } else if (Rotleft.get()){                                      //is bottom limit switch pressed
                     SmartDashboard.putString("Turn Limit", "you have reached the left limit");
                     if (Rotationvalue > 0.0){                                       //if the suggested value is up
-                        rotator.set(Tiltvalue);                                 //allow set of motor
+                        rotator.set(Rotationvalue);                                 //allow set of motor
                     } else {                                                    //if the suggested value is down
                         rotator.set(0);                                         //do not set motor
                     }
@@ -220,6 +226,9 @@ public class MainBot2013 extends SimpleRobot {
                     rotator.set(Tiltvalue);                                     //
                     SmartDashboard.putString("Turn Limit", "neither pressed");
                 }
+            }
+            else{
+                rotator.set(0);
             }
             
             //rob's version of tilt aimer program
