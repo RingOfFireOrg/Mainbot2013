@@ -10,6 +10,7 @@ package edu.wpi.first.wpilibj.templates;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
+//import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.SimpleRobot;
@@ -30,6 +31,7 @@ public class MainBot2013 extends SimpleRobot {
     /**
      * This function is called once each time the robot enters autonomous mode.
      */
+    //Preferences prefs;
     
     //Relays
     Relay banana2 = new Relay(6);
@@ -62,15 +64,18 @@ public class MainBot2013 extends SimpleRobot {
     JoystickButton righttrig = new JoystickButton(rightStick,1);
     JoystickButton tiltAllow = new JoystickButton(actionJoy,3);
     JoystickButton rotAllow = new JoystickButton(actionJoy,4);
+ 
+    double diskNumber;
+    
     
     public void autonomous() {
         while (isAutonomous () && isEnabled()) {
-                Timer.delay(5);
-                rightgearbox.set(1.0);
-           
-                Timer.delay(5);
-                rightgearbox.set(0.1);
-
+                if (diskNumber == 2){
+                    
+                }
+                else if (diskNumber == 3){
+                    
+                }
         }
     }
 
@@ -95,12 +100,14 @@ public class MainBot2013 extends SimpleRobot {
     
     public void operatorControl() {
         boolean fire = false, gearboxstate = false, b, prevalue = false;        
-        double Tiltvalue = 0.0;                                                 //sets value to give garunteed start position
+        double Tiltvalue = 0.0, Rotationvalue = 0;                              
         double shooterspeed=0;
+        long Currenttime, Presstime = 0;
         SmartDashboard.putString("Teleop:", " Enabled");
         while (isOperatorControl() && isEnabled())                              //Runs while enagled 
         {
             Timer.delay(0.1);
+            Currenttime = System.currentTimeMillis();
             
             leftdrive1.set((leftStick.getY()*.75));
             leftdrive2.set((leftStick.getY()*.75));
@@ -140,15 +147,19 @@ public class MainBot2013 extends SimpleRobot {
             SmartDashboard.putNumber("Shooter Speed: ", shooterspeed * (-100)); //happy kyle? indeed
             
             
-            //Banana 2.0
+            //Kicker
             if(firingmech.get()){                                               //limitswitch is pressed
                 if(trigger.get()){                                              //the firing button is pressed
                     fire = true;                                                //motor should be turned on
+                    Presstime = System.currentTimeMillis();
                 }else{                                                          
                     fire = false;                                               //motor should be turned off
                 }                                                               
             }else{                                                              //limitswitch is not pressed
                 fire = true;                                                    //motor should be turned on
+            }
+            if ((Currenttime-Presstime) > 50000){
+                fire = false;
             }
             if(fire){                                                           //if motor should be on
                 banana2.set(Relay.Value.kForward);                              //set it to on
@@ -160,53 +171,54 @@ public class MainBot2013 extends SimpleRobot {
             Tiltvalue = actionJoy.getY(); //(-1);
             
             if (tiltAllow.get()){ 
-                if (tilttop.get() && tiltbot.get()){                                //if both are pressed, this shouldnt happen
-                    SmartDashboard.putString("Limitswitch:", "both limits pressed");
+                 if (tilttop.get() && tiltbot.get()){                           //if both are pressed, this shouldnt happen
+                    SmartDashboard.putString("Tilt limit:", "both limits pressed");
                     tilter.set(0.0);
-                } else if (tilttop.get()){                                          //is top limit switch pressed
-                    SmartDashboard.putString("Limitswitch:", " you have reached the upper limit");
-                    if (Tiltvalue < 0.0){                                           //if the suggested value is down
-                        tilter.set(Tiltvalue);                                      //allow set of motor
-                    } else {                                                        //if the suggested value is up
-                        tilter.set(0);                                              //do not set motor
+                } else if (tilttop.get()){                                      //is top limit switch pressed
+                    SmartDashboard.putString("Tilt limit:", " you have reached the upper limit");
+                    if (Tiltvalue < 0.0){                                       //if the suggested value is down
+                        tilter.set(Tiltvalue);                                  //allow set of motor
+                    } else {                                                    //if the suggested value is up
+                        tilter.set(0);                                          //do not set motor
                     }
-                } else if (tiltbot.get()){                                   //is bottom limit switch pressed
-                    SmartDashboard.putString("Limitswitch:", " you have reached the bottom limit");
-                    if (Tiltvalue > 0.0){                                           //if the suggested value is up
-                        tilter.set(Tiltvalue);                                      //allow set of motor
-                    } else {                                                        //if the suggested value is down
-                        tilter.set(0);                                              //do not set motor
+                } else if (tiltbot.get()){                                      //is bottom limit switch pressed
+                    SmartDashboard.putString("Tilt limit:", " you have reached the bottom limit");
+                    if (Tiltvalue > 0.0){                                       //if the suggested value is up
+                        tilter.set(Tiltvalue);                                  //allow set of motor
+                    } else {                                                    //if the suggested value is down
+                        tilter.set(0);                                          //do not set motor
                     }
                 } else {
                     SmartDashboard.putString("Limitswitch:","neither switch is pressed");
-                    tilter.set(Tiltvalue);                                          //
-                }
+                    tilter.set(Tiltvalue);                                      //
+                } 
             }
             
             //Rotator Aimer
             
-            Tiltvalue = actionJoy.getY()*(-1);
+            Rotationvalue = actionJoy.getY()*(-1);
             
             if (rotAllow.get()){
                 if (Rotleft.get() && Rotleft.get()){                            //if both are pressed, this shouldnt happen
-                    //SmartDashboard.putString("Both limits pressed", "this instance should never be reached expect physical problem");
+                    SmartDashboard.putString("Turn Limit", "this instance should never be reached expect physical problem");
                     rotator.set(0.0);
                 } else if (Rotright.get()){                                     //is top limit switch pressed
-                    //SmartDashboard.putString("Limitswitch Error", "you have reached the upper limit");
-                    if (Tiltvalue < 0.0){                                       //if the suggested value is down
+                    SmartDashboard.putString("Turn Limit", "you have reached the right limit");
+                    if (Rotationvalue < 0.0){                                       //if the suggested value is down
                         rotator.set(Tiltvalue);                                 //allow set of motor
                     } else {                                                    //if the suggested value is up
                         rotator.set(0);                                         //do not set motor
                     }
                 } else if (Rotleft.get()){                                      //is bottom limit switch pressed
-                    //SmartDashboard.putString("Limitswitch Error", "you have reached the bottom limit");
-                    if (Tiltvalue > 0.0){                                       //if the suggested value is up
+                    SmartDashboard.putString("Turn Limit", "you have reached the left limit");
+                    if (Rotationvalue > 0.0){                                       //if the suggested value is up
                         rotator.set(Tiltvalue);                                 //allow set of motor
                     } else {                                                    //if the suggested value is down
                         rotator.set(0);                                         //do not set motor
                     }
                 } else {                                                        //
                     rotator.set(Tiltvalue);                                     //
+                    SmartDashboard.putString("Turn Limit", "neither pressed");
                 }
             }
             
@@ -233,5 +245,8 @@ public class MainBot2013 extends SimpleRobot {
     }
     public void disabled(){
         SmartDashboard.putString("Teleop:", " Disabled");
+    }
+    public void robotInit() {
+      //  diskNumber = prefs.getDouble("Number of auto disks", 2.0);
     }
 }
