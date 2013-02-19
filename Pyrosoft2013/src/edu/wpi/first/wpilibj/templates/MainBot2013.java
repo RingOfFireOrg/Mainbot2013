@@ -70,12 +70,9 @@ public class MainBot2013 extends SimpleRobot {
     
     public void autonomous() {
         while (isAutonomous () && isEnabled()) {
-                if (diskNumber == 2){
-                    
-                }
-                else if (diskNumber == 3){
-                    
-                }
+            shooter.set(1.0);
+            Timer.delay(5);
+            banana2.set(Relay.Value.kForward);
         }
     }
 
@@ -102,12 +99,13 @@ public class MainBot2013 extends SimpleRobot {
         boolean fire = false, gearboxstate = false, b, prevalue = false;        
         double Tiltvalue = 0.0, Rotationvalue = 0;                              
         double shooterspeed=0;
-        long Currenttime, Presstime = 0;
+        long Currenttime, Presstime = System.currentTimeMillis();
         SmartDashboard.putString("Teleop:", " Enabled");
+        shooter.set(0);
+        banana2.set(Relay.Value.kOff);
         while (isOperatorControl() && isEnabled())                              //Runs while enagled 
         {
             Timer.delay(0.1);
-            Currenttime = System.currentTimeMillis();
             
             leftdrive1.set((leftStick.getY()*.75));
             leftdrive2.set((leftStick.getY()*.75));
@@ -148,6 +146,7 @@ public class MainBot2013 extends SimpleRobot {
             
             
             //Kicker
+            Currenttime = System.currentTimeMillis();           
             if(firingmech.get()){                                               //limitswitch is pressed
                 if(trigger.get()){                                              //the firing button is pressed
                     fire = true;                                                //motor should be turned on
@@ -161,6 +160,7 @@ public class MainBot2013 extends SimpleRobot {
             if ((Currenttime-Presstime) > 50000){
                 fire = false;
             }
+
             if(fire){                                                           //if motor should be on
                 banana2.set(Relay.Value.kForward);                              //set it to on
             }else{                                                              //if motor should be off
@@ -200,12 +200,12 @@ public class MainBot2013 extends SimpleRobot {
             
             
             
-            //Rotator Aimer
+            //Rotato Aimer
             
-            Rotationvalue = actionJoy.getX()*(-1);
+            Rotationvalue = actionJoy.getX();
             
             if (rotAllow.get()){
-                if (Rotleft.get() && Rotleft.get()){                            //if both are pressed, this shouldnt happen
+                if (Rotleft.get() && Rotright.get()){                            //if both are pressed, this shouldnt happen
                     SmartDashboard.putString("Turn Limit", "this instance should never be reached expect physical problem");
                     rotator.set(0.0);
                 } else if (Rotright.get()){                                     //is top limit switch pressed
@@ -223,7 +223,7 @@ public class MainBot2013 extends SimpleRobot {
                         rotator.set(0);                                         //do not set motor
                     }
                 } else {                                                        //
-                    rotator.set(Tiltvalue);                                     //
+                    rotator.set(Rotationvalue);                                     //
                     SmartDashboard.putString("Turn Limit", "neither pressed");
                 }
             }
@@ -254,6 +254,8 @@ public class MainBot2013 extends SimpleRobot {
     }
     public void disabled(){
         SmartDashboard.putString("Teleop:", " Disabled");
+        SmartDashboard.putString("Tilt limit:", "Disabled");
+        SmartDashboard.putString("Turn limit:", "Disabled");
     }
     public void robotInit() {
       //  diskNumber = prefs.getDouble("Number of auto disks", 2.0);
