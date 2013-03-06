@@ -69,10 +69,14 @@ public class MainBot2013 extends SimpleRobot {
     
     
     public void autonomous() {
-        while (isAutonomous () && isEnabled()) {
-            shooter.set(1.0);
-            Timer.delay(5);
+        if (isAutonomous() && isEnabled()) {
+            shooter.set(-1.0);
+            tilter.set(1);
+            Timer.delay(7.0);
+            tilter.set(0.0);
             banana2.set(Relay.Value.kForward);
+            Timer.delay(5);
+            banana2.set(Relay.Value.kOff);
         }
     }
 
@@ -96,10 +100,12 @@ public class MainBot2013 extends SimpleRobot {
     
     
     public void operatorControl() {
+        //boolean clearedLimitSwitch;  // indicateds we've dragged free of the limit switch for this go round
         boolean fire = false, gearboxstate = false, b, prevalue = false;        
         double Tiltvalue = 0.0, Rotationvalue = 0;                              
         double shooterspeed=0;
-        long Currenttime, Presstime = System.currentTimeMillis();
+        //long Currenttime, Presstime = System.currentTimeMillis();
+        //double currenttime = 0.0,starttime = 0.0;
         SmartDashboard.putString("Teleop:", " Enabled");
         shooter.set(0);
         banana2.set(Relay.Value.kOff);
@@ -112,7 +118,7 @@ public class MainBot2013 extends SimpleRobot {
             rightdrive1.set((rightStick.getY()*.75)*(-1));
             rightdrive2.set((rightStick.getY()*.75)*(-1));                                  
           
-
+                
                 
             //Gearbox
             
@@ -131,7 +137,7 @@ public class MainBot2013 extends SimpleRobot {
             } else {
                 SmartDashboard.putString("Gear:", " LOW");
                 leftgearbox.set(0.76);
-                rightgearbox.set(0.76);
+               rightgearbox.set(0.76);
             }
             if (b){
                 prevalue = true;
@@ -146,6 +152,28 @@ public class MainBot2013 extends SimpleRobot {
             
             
             //Kicker
+            /*clearedLimitSwitch = (Math.abs(starttime-currenttime)>40); 
+            if (firingmech.get()){
+                SmartDashboard.putBoolean("Kicker limit pressed", true);
+            }
+            else{
+                SmartDashboard.putBoolean("Kicker limit pressed", false);
+            }
+            if(firingmech.get() && clearedLimitSwitch){                         //limitswitch is pressed and we've waited long enough
+		fire = false;                                                                           
+            }
+	    if(trigger.get() && !fire){                                              //the firing button is pressed
+                starttime=System.currentTimeMillis();
+                fire = true;                                                    //motor should be turned on
+            }*/
+            //if(fire){                                                           //if motor should be on
+            if (trigger.get()){
+                //currenttime=System.currentTimeMillis();
+                banana2.set(Relay.Value.kForward);                              //set it to on
+            }else{                                                              //if motor should be off
+                banana2.set(Relay.Value.kOff);                                  //set it to off
+            }
+            /*
             Currenttime = System.currentTimeMillis();           
             if(firingmech.get()){                                               //limitswitch is pressed
                 if(trigger.get()){                                              //the firing button is pressed
@@ -160,7 +188,7 @@ public class MainBot2013 extends SimpleRobot {
             if ((Currenttime-Presstime) > 50000){
                 fire = false;
             }
-
+         
             if(fire){                                                           //if motor should be on
                 banana2.set(Relay.Value.kForward);                              //set it to on
             }else{                                                              //if motor should be off
