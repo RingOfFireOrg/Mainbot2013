@@ -21,12 +21,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class MainBot2013 extends SimpleRobot {
     
+//<editor-fold defaultstate="open" desc="Relays Declaration">    
     /*
      * Relays
      */
         Relay banana2 = new Relay(6);
+ //</editor-fold>
         
-        
+//<editor-fold defaultstate="open" desc="Digital Inputs Declaration">      
     /*
      * Digital inputs
      */
@@ -35,7 +37,9 @@ public class MainBot2013 extends SimpleRobot {
         DigitalInput tiltbot = new DigitalInput(3);
         DigitalInput Rotleft = new DigitalInput(4);
         DigitalInput Rotright = new DigitalInput(5);
-
+//</editor-fold>
+        
+//<editor-fold defaultstate="open" desc="Motor Control Declaration">
     /*
      * Motor Control
      * 
@@ -50,7 +54,9 @@ public class MainBot2013 extends SimpleRobot {
         Victor rotator = new Victor(8);
         Servo leftgearbox = new Servo(10);
         Servo rightgearbox = new Servo(9);
-   
+ //</editor-fold>
+  
+//<editor-fold defaultstate="open" desc="Joysticks and Buttons Declaration"> 
     /*
      * Joysticks and buttons
      * 
@@ -68,10 +74,11 @@ public class MainBot2013 extends SimpleRobot {
         JoystickButton pyramidFront = new JoystickButton(actionJoy,5);
         JoystickButton pyramidBack = new JoystickButton(actionJoy,6);
         JoystickButton autoAim = new JoystickButton(actionJoy,7);
+//</editor-fold>
+        
+double diskNumber;
 
-        double diskNumber;
-
-
+//<editor-fold defaultstate="open" desc="Autonomous Code">
     public void autonomous() {
         if (isAutonomous() && isEnabled()) {
             double tiltdown;
@@ -89,9 +96,9 @@ public class MainBot2013 extends SimpleRobot {
             banana2.set(Relay.Value.kOff);
         }
     }
+//</editor-fold>
 
-
-    
+//<editor-fold defaultstate="open" desc="RampMotor Method">    
     public double rampmotor(double req, double cur){
         double error = Math.abs(req - cur);
         double output = 0.0;
@@ -105,7 +112,9 @@ public class MainBot2013 extends SimpleRobot {
         }
         return output;
     }
- 
+ //</editor-fold>
+    
+//<editor-fold defaultstate="open" desc="Aimer Method">      
     /*
      * Aimer
      *   Allows controlled motion of a device where limit1 and limit2 represet the state of 
@@ -145,10 +154,11 @@ public class MainBot2013 extends SimpleRobot {
         }
         return output;
     }
-    
-    /*
-     *      TELEOP
-     */
+ //</editor-fold>
+   
+/*
+*      TELEOP
+*/
     
     
     public void operatorControl() {
@@ -167,80 +177,87 @@ public class MainBot2013 extends SimpleRobot {
             leftdrive2.set((leftStick.getY()*.75));
             rightdrive1.set((rightStick.getY()*.75)*(-1));
             rightdrive2.set((rightStick.getY()*.75)*(-1));                                  
-          
-    /*
-     * Gearbox
-     * 
-     */            
-            if (lefttrig.get() && righttrig.get()){
-                b = true;                                                       // b if both buttons pressed
-            } else {
-                b = false;
-            }
-            if (!prevalue && b){
-                gearboxstate=!gearboxstate;
-            }
-            if (gearboxstate){
-                SmartDashboard.putString("Gear:", " HIGH");
-                leftgearbox.set(0.23);
-                rightgearbox.set(0.23);
-            } else {
-                SmartDashboard.putString("Gear:", " LOW");
-                leftgearbox.set(0.76);
-               rightgearbox.set(0.76);
-            }
-            if (b){
-                prevalue = true;
-            } else {
-                prevalue = false;
-            }
-      
-    /*
-     * Shooter
-     * 
-     */       
-            shooterspeed=rampmotor((((actionJoy.getThrottle()-1)/-2)*(-1)),shooterspeed);
-            shooter.set(shooterspeed);
-            SmartDashboard.putNumber("Shooter Speed: ", shooterspeed * (-100)); //happy kyle? indeed
-            
-            
-         
-    /*
-     * Banana
-     *      
-     */          
-            if (trigger.get()){
-                banana2.set(Relay.Value.kForward);                              //set it to on
-            }else{                                                              //if motor should be off
-                banana2.set(Relay.Value.kOff);                                  //set it to off
-            }
-          
-    /*
-     * Auto-aimer
-     *       
-     * if any two or more buttons are pressed do nothing
-     */
 
-            if ((pyramidFront.get() && pyramidBack.get()) || (pyramidFront.get() && autoAim.get()) || (pyramidBack.get() && autoAim.get())){
-                rotator.set(0);
-                tilter.set(0);
-            } else if (pyramidFront.get()) {
-                //if we have pressed the go down to position for front of pyramid button
-                
-            } else if (pyramidBack.get()) {
-                //if we have pressed the go down to position for back of pyramid button
-                
-            } else if (autoAim.get()) {
-                //if we are going to auto aim
-                
-                
-            } else {    
-                rotator.set(Aimer(actionJoy.getX(), Rotleft.get(), Rotright.get(), "Rotation:", " Left", " Right"));
-                tilter.set(Aimer(actionJoy.getY(), tilttop.get(), tiltbot.get(), "Tilter:", " Top", " Bottom"));
-            }
+        //<editor-fold defaultstate="open" desc="Gearbox"> 
+            /*
+             * Gearbox
+             * 
+             */            
+                    if (lefttrig.get() && righttrig.get()){
+                        b = true;                                                       // b if both buttons pressed
+                    } else {
+                        b = false;
+                    }
+                    if (!prevalue && b){
+                        gearboxstate=!gearboxstate;
+                    }
+                    if (gearboxstate){
+                        SmartDashboard.putString("Gear:", " HIGH");
+                        leftgearbox.set(0.23);
+                        rightgearbox.set(0.23);
+                    } else {
+                        SmartDashboard.putString("Gear:", " LOW");
+                        leftgearbox.set(0.76);
+                       rightgearbox.set(0.76);
+                    }
+                    if (b){
+                        prevalue = true;
+                    } else {
+                        prevalue = false;
+                    }
+         //</editor-fold>
+
+        //<editor-fold defaultstate="open" desc="Shooter">             
+            /*
+             * Shooter
+             * 
+             */       
+                    shooterspeed=rampmotor((((actionJoy.getThrottle()-1)/-2)*(-1)),shooterspeed);
+                    shooter.set(shooterspeed);
+                    SmartDashboard.putNumber("Shooter Speed: ", shooterspeed * (-100)); //happy kyle? indeed
+         //</editor-fold>            
+
+        //<editor-fold defaultstate="open" desc="Banana">          
+            /*
+             * Banana
+             *      
+             */          
+                    if (trigger.get()){
+                        banana2.set(Relay.Value.kForward);                              //set it to on
+                    }else{                                                              //if motor should be off
+                        banana2.set(Relay.Value.kOff);                                  //set it to off
+                    }
+          //</editor-fold>
+
+        //<editor-fold defaultstate="open" desc="Auto-aimer">             
+            /*
+             * Auto-aimer
+             *       
+             * if any two or more buttons are pressed do nothing
+             */
+
+                    if ((pyramidFront.get() && pyramidBack.get()) || (pyramidFront.get() && autoAim.get()) || (pyramidBack.get() && autoAim.get())){
+                        rotator.set(0);
+                        tilter.set(0);
+                    } else if (pyramidFront.get()) {
+                        //if we have pressed the go down to position for front of pyramid button
+
+                    } else if (pyramidBack.get()) {
+                        //if we have pressed the go down to position for back of pyramid button
+
+                    } else if (autoAim.get()) {
+                        //if we are going to auto aim
+
+
+                    } else {    
+                        rotator.set(Aimer(actionJoy.getX(), Rotleft.get(), Rotright.get(), "Rotation:", " Left", " Right"));
+                        tilter.set(Aimer(actionJoy.getY(), tilttop.get(), tiltbot.get(), "Tilter:", " Top", " Bottom"));
+                    }
+        //</editor-fold>   
+
+            }     
         }
-    }
-    
+     
     public void disabled(){
         SmartDashboard.putString("Teleop:", " Disabled");
         SmartDashboard.putString("Tilt limit:", "Disabled");
