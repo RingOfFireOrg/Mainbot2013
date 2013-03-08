@@ -10,7 +10,6 @@ package edu.wpi.first.wpilibj.templates;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
-//import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.SimpleRobot;
@@ -19,60 +18,71 @@ import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the SimpleRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
- */
 
 public class MainBot2013 extends SimpleRobot {
-    /**
-     * This function is called once each time the robot enters autonomous mode.
+    
+    /*
+     * Relays
      */
-    //Preferences prefs;
-    
-    //Relays
-    Relay banana2 = new Relay(6);
-    
-    //Digital inputs
-    DigitalInput firingmech = new DigitalInput(1);
-    DigitalInput tilttop = new DigitalInput(2);
-    DigitalInput tiltbot = new DigitalInput(3);
-    DigitalInput Rotleft = new DigitalInput(4);
-    DigitalInput Rotright = new DigitalInput(5);
-    
-    //Motor Control
-    Jaguar leftdrive1 = new Jaguar(1);
-    Jaguar leftdrive2 = new Jaguar(2);
-    Jaguar rightdrive1 = new Jaguar(3);
-    Jaguar rightdrive2 = new Jaguar(4);
-    Jaguar shooter = new Jaguar(5);
-    Victor tilter = new Victor(7);
-    Victor rotator = new Victor(8);
-    Servo leftgearbox = new Servo(10);
-    Servo rightgearbox = new Servo(9);
+        Relay banana2 = new Relay(6);
+        
+        
+    /*
+     * Digital inputs
+     */
+        DigitalInput autoselect = new DigitalInput(1);
+        DigitalInput tilttop = new DigitalInput(2);
+        DigitalInput tiltbot = new DigitalInput(3);
+        DigitalInput Rotleft = new DigitalInput(4);
+        DigitalInput Rotright = new DigitalInput(5);
+
+    /*
+     * Motor Control
+     * 
+     * The number at the end represents which PWM port is used on the digital sidecar
+     */
+        Jaguar leftdrive1 = new Jaguar(1);
+        Jaguar leftdrive2 = new Jaguar(2);
+        Jaguar rightdrive1 = new Jaguar(3);
+        Jaguar rightdrive2 = new Jaguar(4);
+        Jaguar shooter = new Jaguar(5);
+        Victor tilter = new Victor(7);
+        Victor rotator = new Victor(8);
+        Servo leftgearbox = new Servo(10);
+        Servo rightgearbox = new Servo(9);
    
-    
-    //Digitaledness
-    Joystick leftStick = new Joystick(1);
-    Joystick rightStick = new Joystick(2);
-    Joystick actionJoy = new Joystick(3);
-    JoystickButton trigger = new JoystickButton(actionJoy, 1);
-    JoystickButton lefttrig = new JoystickButton(leftStick,1);
-    JoystickButton righttrig = new JoystickButton(rightStick,1);
-    JoystickButton tiltAllow = new JoystickButton(actionJoy,3);
-    JoystickButton rotAllow = new JoystickButton(actionJoy,4);
- 
-    double diskNumber;
-    
-    
+    /*
+     * Joysticks and buttons
+     * 
+     * Joystick: number defines which order it needs to be in on the driver station
+     * JoystickButton: name at the end says which joystick, number specifies which button
+     */
+        Joystick leftStick = new Joystick(1);
+        Joystick rightStick = new Joystick(2);
+        Joystick actionJoy = new Joystick(3);
+        JoystickButton trigger = new JoystickButton(actionJoy, 1);
+        JoystickButton lefttrig = new JoystickButton(leftStick,1);
+        JoystickButton righttrig = new JoystickButton(rightStick,1);
+        JoystickButton tiltAllow = new JoystickButton(actionJoy,3);
+        JoystickButton rotAllow = new JoystickButton(actionJoy,4);
+        JoystickButton pyramidFront = new JoystickButton(actionJoy,5);
+        JoystickButton pyramidBack = new JoystickButton(actionJoy,6);
+        JoystickButton autoAim = new JoystickButton(actionJoy,7);
+
+        double diskNumber;
+
+
     public void autonomous() {
         if (isAutonomous() && isEnabled()) {
+            double tiltdown;
+            if(autoselect.get()){
+                tiltdown = 1;
+            } else {
+                tiltdown = 2;
+            }
             shooter.set(-1.0);
             tilter.set(1);
-            Timer.delay(7.0);
+            Timer.delay(tiltdown);
             tilter.set(0.0);
             banana2.set(Relay.Value.kForward);
             Timer.delay(5);
@@ -80,13 +90,11 @@ public class MainBot2013 extends SimpleRobot {
         }
     }
 
-    /**
-     * This function is called once each time the robot enters operator control.
-     */
+
     
     public double rampmotor(double req, double cur){
         double error = Math.abs(req - cur);
-        double output = 0;
+        double output = 0.0;
         
         if(error >= 0.1){
             output = ((0.1)*(req-cur)+ cur);
@@ -97,15 +105,57 @@ public class MainBot2013 extends SimpleRobot {
         }
         return output;
     }
+ 
+    /*
+     * Aimer
+     *   Allows controlled motion of a device where limit1 and limit2 represet the state of 
+     *     limit switches at the extreme ends of allowed motion. 
+     * Inputs:
+     *    movement: a number between -1 and 1 which represents the speed of movement desired
+     *    limit1: if true then no movement speed greater than zero is allowed
+     *    limit2: if true then no movement speed less than zero allowed
+     *    helpcontext: text identifying the mechanism being moved
+     *    pos: text identifying the role of the limit switch at the end of *positive* travel
+     *    neg: text identifying the role of the limit switch at the end of *negative* travel
+     * Return:
+     *   double representin speed applied to the motor
+     */
+    public double Aimer(double movement, boolean limit1, boolean limit2, String helpcontext, String pos, String neg){
+        double output;
+        if (limit1 && limit2){                                          //if both are pressed, this shouldnt happen
+              SmartDashboard.putString(helpcontext, "both limits pressed");
+              output = 0;
+        } else if (limit1){                                             //is top limit switch pressed
+              SmartDashboard.putString(helpcontext, pos);
+              if (movement < 0.0){                                        //if the suggested value is down
+                  output = movement;                                      //allow set of motor
+              } else {                                                    //if the suggested value is up
+                  output = 0;                                             //do not set motor
+              }
+        } else if (limit2){                                             //is bottom limit switch pressed
+              SmartDashboard.putString(helpcontext, neg);
+              if (movement > 0.0){                                        //if the suggested value is up
+                  output = movement;                                      //allow set of motor
+              } else {                                                    //if the suggested value is down
+                  output = 0;                                             //do not set motor
+              }
+        } else {
+              SmartDashboard.putString(helpcontext, "you're all good");
+              output = movement; 
+        }
+        return output;
+    }
+    
+    /*
+     *      TELEOP
+     */
     
     
     public void operatorControl() {
         //boolean clearedLimitSwitch;  // indicateds we've dragged free of the limit switch for this go round
         boolean fire = false, gearboxstate = false, b, prevalue = false;        
-        double Tiltvalue = 0.0, Rotationvalue = 0;                              
+        //double Tiltvalue = 0.0, Rotationvalue = 0;                              
         double shooterspeed=0;
-        //long Currenttime, Presstime = System.currentTimeMillis();
-        //double currenttime = 0.0,starttime = 0.0;
         SmartDashboard.putString("Teleop:", " Enabled");
         shooter.set(0);
         banana2.set(Relay.Value.kOff);
@@ -118,10 +168,10 @@ public class MainBot2013 extends SimpleRobot {
             rightdrive1.set((rightStick.getY()*.75)*(-1));
             rightdrive2.set((rightStick.getY()*.75)*(-1));                                  
           
-                
-                
-            //Gearbox
-            
+    /*
+     * Gearbox
+     * 
+     */            
             if (lefttrig.get() && righttrig.get()){
                 b = true;                                                       // b if both buttons pressed
             } else {
@@ -144,148 +194,56 @@ public class MainBot2013 extends SimpleRobot {
             } else {
                 prevalue = false;
             }
-            
-            //Shooter
+      
+    /*
+     * Shooter
+     * 
+     */       
             shooterspeed=rampmotor((((actionJoy.getThrottle()-1)/-2)*(-1)),shooterspeed);
             shooter.set(shooterspeed);
             SmartDashboard.putNumber("Shooter Speed: ", shooterspeed * (-100)); //happy kyle? indeed
             
             
-            //Kicker
-            /*clearedLimitSwitch = (Math.abs(starttime-currenttime)>40); 
-            if (firingmech.get()){
-                SmartDashboard.putBoolean("Kicker limit pressed", true);
-            }
-            else{
-                SmartDashboard.putBoolean("Kicker limit pressed", false);
-            }
-            if(firingmech.get() && clearedLimitSwitch){                         //limitswitch is pressed and we've waited long enough
-		fire = false;                                                                           
-            }
-	    if(trigger.get() && !fire){                                              //the firing button is pressed
-                starttime=System.currentTimeMillis();
-                fire = true;                                                    //motor should be turned on
-            }*/
-            //if(fire){                                                           //if motor should be on
-            if (trigger.get()){
-                //currenttime=System.currentTimeMillis();
-                banana2.set(Relay.Value.kForward);                              //set it to on
-            }else{                                                              //if motor should be off
-                banana2.set(Relay.Value.kOff);                                  //set it to off
-            }
-            /*
-            Currenttime = System.currentTimeMillis();           
-            if(firingmech.get()){                                               //limitswitch is pressed
-                if(trigger.get()){                                              //the firing button is pressed
-                    fire = true;                                                //motor should be turned on
-                    Presstime = System.currentTimeMillis();
-                }else{                                                          
-                    fire = false;                                               //motor should be turned off
-                }                                                               
-            }else{                                                              //limitswitch is not pressed
-                fire = true;                                                    //motor should be turned on
-            }
-            if ((Currenttime-Presstime) > 50000){
-                fire = false;
-            }
          
-            if(fire){                                                           //if motor should be on
+    /*
+     * Banana
+     *      
+     */          
+            if (trigger.get()){
                 banana2.set(Relay.Value.kForward);                              //set it to on
             }else{                                                              //if motor should be off
                 banana2.set(Relay.Value.kOff);                                  //set it to off
             }
-            
-            //Tilt Aimer
-            Tiltvalue = actionJoy.getY(); //(-1);
-            
-            if (tiltAllow.get()){ 
-                 if (tilttop.get() && tiltbot.get()){                           //if both are pressed, this shouldnt happen
-                    SmartDashboard.putString("Tilt limit:", "both limits pressed");
-                    tilter.set(0.0);
-                } else if (tilttop.get()){                                      //is top limit switch pressed
-                    SmartDashboard.putString("Tilt limit:", " you have reached the upper limit");
-                    if (Tiltvalue < 0.0){                                       //if the suggested value is down
-                        tilter.set(Tiltvalue);                                  //allow set of motor
-                    } else {                                                    //if the suggested value is up
-                        tilter.set(0);                                          //do not set motor
-                    }
-                } else if (tiltbot.get()){                                      //is bottom limit switch pressed
-                    SmartDashboard.putString("Tilt limit:", " you have reached the bottom limit");
-                    if (Tiltvalue > 0.0){                                       //if the suggested value is up
-                        tilter.set(Tiltvalue);                                  //allow set of motor
-                    } else {                                                    //if the suggested value is down
-                        tilter.set(0);                                          //do not set motor
-                    }
-                } else {
-                    SmartDashboard.putString("Tilt limit:"," neither switch is pressed");
-                    tilter.set(Tiltvalue); 
-                    //
-                }
-            }
-            else{
-                tilter.set(0);
-            }
-            
-            
-            
-            //Rotato Aimer
-            
-            Rotationvalue = actionJoy.getX();
-            
-            if (rotAllow.get()){
-                if (Rotleft.get() && Rotright.get()){                            //if both are pressed, this shouldnt happen
-                    SmartDashboard.putString("Turn Limit", "this instance should never be reached expect physical problem");
-                    rotator.set(0.0);
-                } else if (Rotright.get()){                                     //is top limit switch pressed
-                    SmartDashboard.putString("Turn Limit", "you have reached the right limit");
-                    if (Rotationvalue < 0.0){                                       //if the suggested value is down
-                        rotator.set(Rotationvalue);                                 //allow set of motor
-                    } else {                                                    //if the suggested value is up
-                        rotator.set(0);                                         //do not set motor
-                    }
-                } else if (Rotleft.get()){                                      //is bottom limit switch pressed
-                    SmartDashboard.putString("Turn Limit", "you have reached the left limit");
-                    if (Rotationvalue > 0.0){                                       //if the suggested value is up
-                        rotator.set(Rotationvalue);                                 //allow set of motor
-                    } else {                                                    //if the suggested value is down
-                        rotator.set(0);                                         //do not set motor
-                    }
-                } else {                                                        //
-                    rotator.set(Rotationvalue);                                     //
-                    SmartDashboard.putString("Turn Limit", "neither pressed");
-                }
-            }
-            else{
+          
+    /*
+     * Auto-aimer
+     *       
+     * if any two or more buttons are pressed do nothing
+     */
+
+            if ((pyramidFront.get() && pyramidBack.get()) || (pyramidFront.get() && autoAim.get()) || (pyramidBack.get() && autoAim.get())){
                 rotator.set(0);
+                tilter.set(0);
+            } else if (pyramidFront.get()) {
+                //if we have pressed the go down to position for front of pyramid button
+                
+            } else if (pyramidBack.get()) {
+                //if we have pressed the go down to position for back of pyramid button
+                
+            } else if (autoAim.get()) {
+                //if we are going to auto aim
+                
+                
+            } else {    
+                rotator.set(Aimer(actionJoy.getX(), Rotleft.get(), Rotright.get(), "Rotation:", " Left", " Right"));
+                tilter.set(Aimer(actionJoy.getY(), tilttop.get(), tiltbot.get(), "Tilter:", " Top", " Bottom"));
             }
-            
-            //rob's version of tilt aimer program
-            /*
-            int position = 0;
-            if (limitSwitchtop.get()){ 
-                position = 1;
-            }
-            if (limitSwitchbot.get()) {
-                position = -1;
-            }
-            
-            if (position == 1 && Tiltvalue > 0) {
-                Tiltvalue = 0;
-            }
-            if (position == -1 && Tiltvalue < 0) {
-                Tiltvalue = 0;
-            }
-            tilter.set(Tiltvalue);
-            */
-            
         }
     }
+    
     public void disabled(){
         SmartDashboard.putString("Teleop:", " Disabled");
         SmartDashboard.putString("Tilt limit:", "Disabled");
         SmartDashboard.putString("Turn limit:", "Disabled");
-    }
-    public void robotInit() {
-      //  diskNumber = prefs.getDouble("Number of auto disks", 2.0);
     }
 }
