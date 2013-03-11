@@ -33,10 +33,10 @@ public class MainBot2013 extends SimpleRobot {
      * Digital inputs
      */
         DigitalInput autoselect = new DigitalInput(1);
-        DigitalInput tilttop = new DigitalInput(2);
-        DigitalInput tiltbot = new DigitalInput(3);
-        DigitalInput Rotleft = new DigitalInput(4);
-        DigitalInput Rotright = new DigitalInput(5);
+        DigitalInput tiltTop = new DigitalInput(2);
+        DigitalInput tiltBot = new DigitalInput(3);
+        DigitalInput rotLeft = new DigitalInput(4);
+        DigitalInput rotRight = new DigitalInput(5);
 //</editor-fold>
         
 //<editor-fold defaultstate="open" desc="Motor Control Declaration">
@@ -76,16 +76,16 @@ public class MainBot2013 extends SimpleRobot {
         JoystickButton autoAim = new JoystickButton(actionJoy,7);
 //</editor-fold>
         
-double diskNumber;
+        long diskNumberBack, diskNumberFront;
 
 //<editor-fold defaultstate="open" desc="Autonomous Code">
     public void autonomous() {
         if (isAutonomous() && isEnabled()) {
             double tiltdown;
             if(autoselect.get()){
-                tiltdown = 1;
+                tiltdown = diskNumberFront;
             } else {
-                tiltdown = 2;
+                tiltdown = diskNumberBack;
             }
             shooter.set(-1.0);
             tilter.set(1);
@@ -130,23 +130,18 @@ double diskNumber;
      *   double representin speed applied to the motor
      */
     public double Aimer(double movement, boolean limit1, boolean limit2, String helpcontext, String pos, String neg){
-        double output;
+        double output = 0;
         if (limit1 && limit2){                                          //if both are pressed, this shouldnt happen
               SmartDashboard.putString(helpcontext, "both limits pressed");
-              output = 0;
         } else if (limit1){                                             //is top limit switch pressed
               SmartDashboard.putString(helpcontext, pos);
               if (movement < 0.0){                                        //if the suggested value is down
                   output = movement;                                      //allow set of motor
-              } else {                                                    //if the suggested value is up
-                  output = 0;                                             //do not set motor
               }
         } else if (limit2){                                             //is bottom limit switch pressed
               SmartDashboard.putString(helpcontext, neg);
               if (movement > 0.0){                                        //if the suggested value is up
                   output = movement;                                      //allow set of motor
-              } else {                                                    //if the suggested value is down
-                  output = 0;                                             //do not set motor
               }
         } else {
               SmartDashboard.putString(helpcontext, "you're all good");
@@ -163,12 +158,17 @@ double diskNumber;
     
     public void operatorControl() {
         //boolean clearedLimitSwitch;  // indicateds we've dragged free of the limit switch for this go round
-        boolean fire = false, gearboxstate = false, b, prevalue = false;        
+        boolean fire = false, gearboxstate = false, b, a, prevalue = false;        
         //double Tiltvalue = 0.0, Rotationvalue = 0;                              
         double shooterspeed=0;
         SmartDashboard.putString("Teleop:", " Enabled");
         shooter.set(0);
         banana2.set(Relay.Value.kOff);
+        int aimerState, stateMachine1 = 0;
+        boolean goingDown = false, secondaryCase = false;
+        double aimProcessOut, aimerDown = 0;
+        long stateMachine1Time = System.currentTimeMillis();
+        
         while (isOperatorControl() && isEnabled())                              //Runs while enagled 
         {
             Timer.delay(0.1);
@@ -184,11 +184,11 @@ double diskNumber;
              * 
              */            
                     if (lefttrig.get() && righttrig.get()){
-                        b = true;                                                       // b if both buttons pressed
+                        a = true;                                                       // b if both buttons pressed
                     } else {
-                        b = false;
+                        a = false;
                     }
-                    if (!prevalue && b){
+                    if (!prevalue && a){
                         gearboxstate=!gearboxstate;
                     }
                     if (gearboxstate){
@@ -200,7 +200,7 @@ double diskNumber;
                         leftgearbox.set(0.76);
                        rightgearbox.set(0.76);
                     }
-                    if (b){
+                    if (a){
                         prevalue = true;
                     } else {
                         prevalue = false;
@@ -231,36 +231,67 @@ double diskNumber;
 
         //<editor-fold defaultstate="open" desc="Auto-aimer">             
             /*
-             * Auto-aimer
+             * Aiming Systems
              *       
              * if any two or more buttons are pressed do nothing
              */
 
+
+
+                    
                     if ((pyramidFront.get() && pyramidBack.get()) || (pyramidFront.get() && autoAim.get()) || (pyramidBack.get() && autoAim.get())){
                         rotator.set(0);
                         tilter.set(0);
+                        aimerState = 0;
                     } else if (pyramidFront.get()) {
                         //if we have pressed the go down to position for front of pyramid button
-
+                        aimerState = 1;
+                        aimerDown = diskNumberFront;
                     } else if (pyramidBack.get()) {
                         //if we have pressed the go down to position for back of pyramid button
-
+                        aimerState = 1;
+                        aimerDown = diskNumberBack;
                     } else if (autoAim.get()) {
                         //if we are going to auto aim
-
-
+                        aimerState = 2;
                     } else {    
-                        rotator.set(Aimer(actionJoy.getX(), Rotleft.get(), Rotright.get(), "Rotation:", " Left", " Right"));
-                        tilter.set(Aimer(actionJoy.getY(), tilttop.get(), tiltbot.get(), "Tilter:", " Top", " Bottom"));
+                        rotator.set(Aimer(actionJoy.getX(), rotLeft.get(), rotRight.get(), "Rotation:", " Left", " Right"));
+                        tilter.set(Aimer(actionJoy.getY(), tiltTop.get(), tiltBot.get(), "Tilter:", " Top", " Bottom"));
+                        aimerState = 3;
+                    }
+                    
+                 
+                    if (true) {
+                        if (stateMachine1 == 0) {
+                            if (aimerState == 1 && !tiltTop.get()) {
+                                stateMachine1 = 1;
+                            } else if (aimerState == 1 && tiltTop.get()) {
+                                stateMachine1 = 2;
+                            }
+                        } else if (stateMachine1 == 1) {
+                            if (tiltTop.get()) {
+                                stateMachine1 = 2;
+                                stateMachine1Time = System.currentTimeMillis();
+                            } else {
+                                tilter.set(1);
+                                stateMachine1Time = System.currentTimeMillis();
+                            }
+                        } else if (stateMachine1 == 2) {
+                            if ((stateMachine1Time - System.currentTimeMillis()) > aimerDown) {
+                                stateMachine1 = 0;
+                            } else {
+                                tilter.set(-1);
+                            }
+                        }
                     }
         //</editor-fold>   
 
             }     
         }
      
-    public void disabled(){
+    /*public void disabled() {
         SmartDashboard.putString("Teleop:", " Disabled");
         SmartDashboard.putString("Tilt limit:", "Disabled");
         SmartDashboard.putString("Turn limit:", "Disabled");
-    }
+    }*/
 }
