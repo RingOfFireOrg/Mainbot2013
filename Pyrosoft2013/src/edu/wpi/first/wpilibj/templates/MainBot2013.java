@@ -255,8 +255,12 @@ public class MainBot2013 extends SimpleRobot {
                         //if we are going to auto aim
                         aimerState = 2;
                     } else {    
-                        rotator.set(Aimer(actionJoy.getX(), rotLeft.get(), rotRight.get(), "Rotation:", " Left", " Right"));
-                        tilter.set(Aimer(actionJoy.getY(), tiltTop.get(), tiltBot.get(), "Tilter:", " Top", " Bottom"));
+                        if (tiltAllow.get()) {
+                            tilter.set(Aimer(actionJoy.getY(), tiltTop.get(), tiltBot.get(), "Tilter:", " Top", " Bottom"));
+                        }
+                        if (rotAllow.get()) {
+                            rotator.set(Aimer(actionJoy.getX(), rotLeft.get(), rotRight.get(), "Rotation:", " Left", " Right"));
+                        }
                         aimerState = 3;
                     }
                     
