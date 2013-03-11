@@ -248,7 +248,7 @@ public class MainBot2013 extends SimpleRobot {
                         aimerState = 1;
                         aimerDown = diskNumberFront;
                     } else if (pyramidBack.get()) {
-                        //if we have pressed the go down to position for back of pyramid button
+                        //if we have pressed the go down to position for back of pyramid button.
                         aimerState = 1;
                         aimerDown = diskNumberBack;
                     } else if (autoAim.get()) {
