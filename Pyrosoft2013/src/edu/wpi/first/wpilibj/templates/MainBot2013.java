@@ -74,9 +74,10 @@ public class MainBot2013 extends SimpleRobot {
         JoystickButton pyramidFront = new JoystickButton(actionJoy,11);
         JoystickButton pyramidBack = new JoystickButton(actionJoy,12); 
         JoystickButton autoAim = new JoystickButton(actionJoy,7);
+        JoystickButton revTrigger = new JoystickButton(actionJoy, 8);
 //</editor-fold>
         
-        double diskNumberBack = 6.5, diskNumberFront = 4.9;
+        double diskNumberBack = 6.8, diskNumberFront = 4.9;
         // diskNumberBack: time it takes to go down for aiming from the back of the pyramid
         // diskNumberFront: time it takes to go down for aiming from the front of the pyramid
 
@@ -170,6 +171,7 @@ public class MainBot2013 extends SimpleRobot {
         boolean goingDown = false, secondaryCase = false;
         double aimProcessOut, aimerDown = 0;
         long stateMachine1Time = System.currentTimeMillis();
+        Relay.Value kickerAction;
         
         while (isOperatorControl() && isEnabled())                              //Runs while enagled 
         {
@@ -223,12 +225,19 @@ public class MainBot2013 extends SimpleRobot {
             /*
              * Banana
              *      
-             */          
+             */         
+                    kickerAction = Relay.Value.kOff;
+                    
                     if (trigger.get()){
-                        banana2.set(Relay.Value.kForward);                              //set it to on
-                    }else{                                                              //if motor should be off
-                        banana2.set(Relay.Value.kOff);                                  //set it to off
+                        kickerAction = Relay.Value.kForward;                              //set it to on
+                        SmartDashboard.putString("Kicker", "forward");
                     }
+                    if (revTrigger.get()){
+                        kickerAction = Relay.Value.kReverse;
+                        SmartDashboard.putString("Kicker", "REVERSE");
+                    }    
+                    banana2.set(kickerAction);  
+                    
           //</editor-fold>
 
         //<editor-fold defaultstate="open" desc="Auto-aimer">             
