@@ -131,17 +131,17 @@ public class MainBot2013 extends SimpleRobot {
      */
     public double Aimer(double movement, boolean limit1, boolean limit2, String helpcontext, String pos, String neg){
         double output = 0;
-        if (limit1 && limit2){                                          //if both are pressed, this shouldnt happen
+        if (limit1 && limit2){                                                  //if both are pressed, this shouldnt happen
               SmartDashboard.putString(helpcontext, "both limits pressed");
-        } else if (limit1){                                             //is top limit switch pressed
+        } else if (limit1){                                                     //is pos limit switch pressed
               SmartDashboard.putString(helpcontext, pos);
-              if (movement < 0.0){                                        //if the suggested value is down
-                  output = movement;                                      //allow set of motor
+              if (movement < 0.0){                                              //if the suggested value is negative
+                  output = movement;                                            //allow set of motor
               }
-        } else if (limit2){                                             //is bottom limit switch pressed
+        } else if (limit2){                                                     //is neg limit switch pressed
               SmartDashboard.putString(helpcontext, neg);
-              if (movement > 0.0){                                        //if the suggested value is up
-                  output = movement;                                      //allow set of motor
+              if (movement > 0.0){                                              //if the suggested value is positive
+                  output = movement;                                            //allow set of motor
               }
         } else {
               SmartDashboard.putString(helpcontext, "you're all good");
@@ -158,7 +158,7 @@ public class MainBot2013 extends SimpleRobot {
     
     public void operatorControl() {
         //boolean clearedLimitSwitch;  // indicateds we've dragged free of the limit switch for this go round
-        boolean fire = false, gearboxstate = false, b, a, prevalue = false;        
+        boolean fire = false, gearboxstate = false, b, a, BananaA, BananaPreValue = false, BananaState = false, prevalue = false;        
         //double Tiltvalue = 0.0, Rotationvalue = 0;                              
         double shooterspeed=0;
         SmartDashboard.putString("Teleop:", " Enabled");
@@ -229,6 +229,28 @@ public class MainBot2013 extends SimpleRobot {
                     }
           //</editor-fold>
 
+               if (trigger.get()){
+                        BananaA = true;                                                       // b if both buttons pressed
+                    } else {
+                        BananaA = false;
+                    }
+                    if (!BananaPreValue && BananaA){
+                        BananaState=!BananaState;
+                    }
+                    if (BananaState){
+                        SmartDashboard.putString("Banana:", " On");
+                       banana2.set(Relay.Value.kForward);
+                    } else {
+                        SmartDashboard.putString("Banana:", " Off");
+                        banana2.set(Relay.Value.kOff);
+                    }
+                    if (a){
+                        BananaPreValue = true;
+                    } else {
+                        BananaPreValue = false;
+                    }
+                    
+                    
         //<editor-fold defaultstate="open" desc="Auto-aimer">             
             /*
              * Aiming Systems
@@ -237,8 +259,9 @@ public class MainBot2013 extends SimpleRobot {
              */
 
 
-
                     
+                    Aimer(actionJoy.getY(), tiltTop.get(), tiltBot.get(), "Tilter:", " Top", " Bottom");
+                    /*
                     if ((pyramidFront.get() && pyramidBack.get()) || (pyramidFront.get() && autoAim.get()) || (pyramidBack.get() && autoAim.get())){
                         rotator.set(0);
                         tilter.set(0);
@@ -264,12 +287,14 @@ public class MainBot2013 extends SimpleRobot {
                         aimerState = 3;
                     }
                     
+
+                    
                  
-                    if (true) {
+                    if (aimerState == 1) {
                         if (stateMachine1 == 0) {
-                            if (aimerState == 1 && !tiltTop.get()) {
+                            if (!tiltTop.get()) {
                                 stateMachine1 = 1;
-                            } else if (aimerState == 1 && tiltTop.get()) {
+                            } else if (tiltTop.get()) {
                                 stateMachine1 = 2;
                             }
                         } else if (stateMachine1 == 1) {
@@ -288,6 +313,11 @@ public class MainBot2013 extends SimpleRobot {
                             }
                         }
                     }
+                    
+                    if (aimerState == 2) {
+                        
+                    }
+                    */
         //</editor-fold>   
 
             }     
