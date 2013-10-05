@@ -71,17 +71,20 @@ public class MainBot2013 extends SimpleRobot {
         JoystickButton righttrig = new JoystickButton(rightStick,1);
         JoystickButton tiltAllow = new JoystickButton(actionJoy,3);
         JoystickButton rotAllow = new JoystickButton(actionJoy,4);
-        JoystickButton pyramidFront = new JoystickButton(actionJoy,5);
-        JoystickButton pyramidBack = new JoystickButton(actionJoy,6);
+        JoystickButton pyramidFront = new JoystickButton(actionJoy,11);
+        JoystickButton pyramidBack = new JoystickButton(actionJoy,12); 
         JoystickButton autoAim = new JoystickButton(actionJoy,7);
+        JoystickButton revTrigger = new JoystickButton(actionJoy, 8);
 //</editor-fold>
         
-        long diskNumberBack, diskNumberFront;
+        double diskNumberBack = 6.8, diskNumberFront = 4.9;
+        // diskNumberBack: time it takes to go down for aiming from the back of the pyramid
+        // diskNumberFront: time it takes to go down for aiming from the front of the pyramid
 
 //<editor-fold defaultstate="open" desc="Autonomous Code">
     public void autonomous() {
         if (isAutonomous() && isEnabled()) {
-            double tiltdown;
+            double tiltdown; 
             if(autoselect.get()){
                 tiltdown = diskNumberFront;
             } else {
@@ -99,8 +102,8 @@ public class MainBot2013 extends SimpleRobot {
 //</editor-fold>
 
 //<editor-fold defaultstate="open" desc="RampMotor Method">    
-    public double rampmotor(double req, double cur){
-        double error = Math.abs(req - cur);
+    public double rampmotor(double req, double cur){ //init variables Requested speed and Current speed
+        double error = Math.abs(req - cur); //sets variable error to Requested speed minus Current speed
         double output = 0.0;
         
         if(error >= 0.1){
@@ -168,6 +171,7 @@ public class MainBot2013 extends SimpleRobot {
         boolean goingDown = false, secondaryCase = false;
         double aimProcessOut, aimerDown = 0;
         long stateMachine1Time = System.currentTimeMillis();
+        Relay.Value kickerAction;
         
         while (isOperatorControl() && isEnabled())                              //Runs while enagled 
         {
@@ -221,12 +225,19 @@ public class MainBot2013 extends SimpleRobot {
             /*
              * Banana
              *      
-             */          
+             */         
+                    kickerAction = Relay.Value.kOff;
+                    
                     if (trigger.get()){
-                        banana2.set(Relay.Value.kForward);                              //set it to on
-                    }else{                                                              //if motor should be off
-                        banana2.set(Relay.Value.kOff);                                  //set it to off
+                        kickerAction = Relay.Value.kForward;                              //set it to on
+                        SmartDashboard.putString("Kicker", "forward");
                     }
+                    if (revTrigger.get()){
+                        kickerAction = Relay.Value.kReverse;
+                        SmartDashboard.putString("Kicker", "REVERSE");
+                    }    
+                    banana2.set(kickerAction);  
+                    
           //</editor-fold>
 
                if (trigger.get()){
@@ -271,7 +282,7 @@ public class MainBot2013 extends SimpleRobot {
                         aimerState = 1;
                         aimerDown = diskNumberFront;
                     } else if (pyramidBack.get()) {
-                        //if we have pressed the go down to position for back of pyramid button
+                        //if we have pressed the go down to position for back of pyramid button.
                         aimerState = 1;
                         aimerDown = diskNumberBack;
                     } else if (autoAim.get()) {
@@ -281,9 +292,17 @@ public class MainBot2013 extends SimpleRobot {
                         if (tiltAllow.get()) {
                             tilter.set(Aimer(actionJoy.getY(), tiltTop.get(), tiltBot.get(), "Tilter:", " Top", " Bottom"));
                         }
+                        else{
+                            tilter.set(0);
+                        }
                         if (rotAllow.get()) {
                             rotator.set(Aimer(actionJoy.getX(), rotLeft.get(), rotRight.get(), "Rotation:", " Left", " Right"));
                         }
+                        else{
+                            rotator.set(0);
+                            
+                        }
+                            
                         aimerState = 3;
                     }
                     
@@ -296,20 +315,21 @@ public class MainBot2013 extends SimpleRobot {
                                 stateMachine1 = 1;
                             } else if (tiltTop.get()) {
                                 stateMachine1 = 2;
+                                stateMachine1Time = System.currentTimeMillis();
                             }
                         } else if (stateMachine1 == 1) {
                             if (tiltTop.get()) {
                                 stateMachine1 = 2;
                                 stateMachine1Time = System.currentTimeMillis();
                             } else {
-                                tilter.set(1);
-                                stateMachine1Time = System.currentTimeMillis();
+                                tilter.set(Aimer(-1, tiltTop.get(), tiltBot.get(), "Tilter:", " Top", " Bottom"));
+                                
                             }
                         } else if (stateMachine1 == 2) {
-                            if ((stateMachine1Time - System.currentTimeMillis()) > aimerDown) {
+                            if ((System.currentTimeMillis() - stateMachine1Time) >= ((1000)*aimerDown)) {
                                 stateMachine1 = 0;
                             } else {
-                                tilter.set(-1);
+                                tilter.set(Aimer(1, tiltTop.get(), tiltBot.get(), "Tilter:", " Top", " Bottom"));
                             }
                         }
                     }
